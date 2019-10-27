@@ -17,13 +17,10 @@ import javax.swing.event.ChangeListener;
 
 public class PhotoComponentModel {
 	private ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
-	//private  boolean flipped = false;
+
 	private ArrayList<ChangeListener> changeListeners = new ArrayList<ChangeListener>(); 
 	//reference to image
 	private BufferedImage image;
-	//reference to the back of the image
-//	private Image backImage;
-	
 	private Color currentColor; 
 	private FontMetrics font;
 	
@@ -37,7 +34,7 @@ public class PhotoComponentModel {
 		try {
 			this.image = ImageIO.read(new File(img));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		}
 		this.notes = new ArrayList<Note>();
@@ -50,10 +47,6 @@ public class PhotoComponentModel {
 		return this.image;
 	}
 	
-/*	public Image getBackImage() {
-		return this.backImage;
-	}
-	*/
 	
 	public Color getColor() {
 		return this.currentColor;
@@ -79,11 +72,9 @@ public class PhotoComponentModel {
 		try {
 			this.image = ImageIO.read(new File(img));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	//	this.flipped = false;
-	//	this.backImage = null;
+		
 		this.notes = new ArrayList<Note>();
 	}
 	
@@ -137,15 +128,7 @@ public class PhotoComponentModel {
 		
 	}
 	
-	/*public void setFlipped(boolean isFlipped) {
-		if (isFlipped != this.flipped) {
-			if(!isFlipped) {
-				fireButton();
-			}
-			flipped= isFlipped;
-			fireChangeListener();
-		}
-	}*/
+
 	private void fireButton() {
 		for (ActionListener listener: actionListeners) {
 			
@@ -158,9 +141,7 @@ public class PhotoComponentModel {
 			listener.stateChanged(new ChangeEvent(this));
 		}
 	}
-/*	public boolean isFlipped() {
-		return flipped;
-	}*/
+
 	
 	public void addChangeListener(ChangeListener listener) {
 		changeListeners.add(listener);

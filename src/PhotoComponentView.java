@@ -23,8 +23,7 @@ public class PhotoComponentView {
 	
 	
 
-	PhotoComponent controller;
-	// Graphics2D object 
+	PhotoComponent controller; 
 	private Graphics2D g2;
 	private Graphics g;
 	private Image image;
@@ -36,10 +35,7 @@ public class PhotoComponentView {
 	public PhotoComponentView (PhotoComponent controller) {
 		this.controller = controller;
 		setupListeners();
-		this.paintingStroke=false;
-//		noteSelected = false;
-//		positionSelectedNote = -1;
-		
+		this.paintingStroke=false;		
 	}
 
 	private void setupListeners() {
@@ -56,15 +52,6 @@ public class PhotoComponentView {
 			}
 			@Override public void mouseReleased(MouseEvent e) {
 				
-				
-				if (controller.isNoteSelected()) {
-					if(controller.getPositionSelected() > 0) {
-						System.out.println("Note "+ controller.getPositionSelected() + ":");
-						Note note = controller.getModel().getNotes().get(controller.getPositionSelected());
-						System.out.println("- Starts: ("+ note.getX()+", "+ note.getY()+")");
-						System.out.println("- Finishes: ("+ note.getEndx()+", "+ note.getEndy()+")");
-					}
-				}
 				if (paintingStroke) {
 					paintingStroke = false;
 				}
@@ -91,16 +78,13 @@ public class PhotoComponentView {
 						
 						if(controller.isNoteSelected()) {
 							controller.setPositionSelected(positionSelectedNote);
-							System.out.println("YOU CLICKED INSIDE A NOTE");
-							
 							
 						}else {
 							int positionSelectedStroke = isIntoStroke(x,y);
 							if (controller.isStrokeSelected()) {
 								controller.setPositionSelected(positionSelectedStroke);
-								System.out.println("YOU CLICKED INSIDE A STROKE");
-								
 							}else {
+								
 								model.addNote(new Note(x,y, g.getFontMetrics()));
 								
 							}
@@ -143,7 +127,6 @@ public class PhotoComponentView {
 						int diffY = oldY - currentY ;
 						int strokeX, strokeY;
 						Stroke stroke = model.getStrokes().get(controller.getPositionSelected());
-						//stroke.addPoint(currentX, currentY);
 						List<Point> strokelist = stroke.getPoints();
 						for (int i= 0; i < strokelist.size();i++) {
 							strokeX = (int) strokelist.get(i).getX();
@@ -172,7 +155,7 @@ public class PhotoComponentView {
 				}
 				
 				
-			}
+			} 
 
 			@Override public void mouseMoved(MouseEvent e) {}
 			
@@ -185,8 +168,7 @@ public class PhotoComponentView {
 				if (controller.isEditable()) {
 					controller.addToNote(e.getKeyChar());
 				}
-				
-			//	Note note = model.getNotes().get(model.getNotes().size()-1);
+			
 			}
 
 			@Override public void keyPressed(KeyEvent e) {}
@@ -203,29 +185,17 @@ public class PhotoComponentView {
 		List<Note> notelist = model.getNotes();
 		int i = 0;
 		int positionNote = -1;
-		System.out.println("-----------------------------------------");
-		System.out.println("Entered in method isIntoNOTE");
+		
 	    if (notelist.size() > 0) {
 	    	for (i= 0; i < notelist.size(); i++) {
 	    		Note note = notelist.get(i);
-	    		System.out.println("Note number "+ i);
 	    		
-	    		System.out.println("VERTICAL: ("+note.getY()+" ->" + note.getEndy() +") | real click:"+ y);
 	    		if( note.getY() <= y && y <= note.getEndy()) {
-	    			System.out.println("FIRST FILTER");
-	    			System.out.println("HORIZONTAL: ("+note.getX()+" ->" + note.getMaxX() +") | real click:"+ x);
 	    			
-    				
 	    			if( note.getX() <= x && x <= note.getMaxX()) {
 	    				controller.setNoteSelected(true);
 	    				positionNote = i;
-	    				System.out.println("Has clickado dentro de la nota "+ i +" !!!");
-	    				g.setColor(Color.RED);
-	    				System.out.println(note.getX()+ " - " + note.getY()+ " - " + (note.getMaxX()- note.getX())+ " - " + (note.getEndy() - note.getY()));
-	    				
-	    				
-
-	    				
+	    				g.setColor(Color.RED);	
 	    			}
 	    		}
 	    	}
@@ -238,24 +208,19 @@ public class PhotoComponentView {
 	public int isIntoStroke(int x, int y) {
 		PhotoComponentModel model = controller.getModel();
 		List<Stroke> strokelist = model.getStrokes();
-		//int i = 0;
 		int positionStroke = -1;
-		System.out.println("-----------------------------------------");
-		System.out.println("Entered in method isIntoSTROKE");
+		
 		if (strokelist.size() >0) {
 			for (int i = 0; i < strokelist.size();i++) {
 				Stroke stroke = strokelist.get(i);
-				System.out.println("Stroke number "+ i);
 				
-				System.out.println("HORIZONTAL: ("+ stroke.getMinX() + " ->" + stroke.getMaxX() + ") | real click:" + x);
 				if (stroke.getMinX() <= x && x <= stroke.getMaxX()) {
-					System.out.println("FIRST FILTER");
-					System.out.println("VERTICAL: ("+ stroke.getMinY() + " ->" + stroke.getMaxY() + ") | real click:" + y);
+					
 					if (stroke.getMinY() <= y && y <= stroke.getMaxY()) {
-						//strokeSelected = true;
+						
 						controller.setStrokeSelected(true);
 						positionStroke= i;
-						System.out.println("Has clickado dentro del dibujo "+ i);
+						
 					}
 				}
 			}
@@ -268,7 +233,7 @@ public class PhotoComponentView {
 	 * Paints the back of the image in a white canvas that lets the user draw lines and write on it. 
 	 * @param g: Graphics of the component
 	 * @param component: The controller
-	 */
+	 
 	public void paintBackPicture (Graphics g, PhotoComponent component) {
 		
 		this.g = g;
@@ -282,7 +247,7 @@ public class PhotoComponentView {
 			/*Code for drawing the blank canvas and drawing lines
 			 * THIS AND THE KEYLISTENERS MODULES HAVE BEEN INSPIRED BY A WEBSITE TUTORIAL.
 			 *See the full page here: http://www.ssaurel.com/blog/learn-how-to-make-a-swing-painting-and-drawing-application/
-			 */
+			 
 			backImage = controller.createImage(icon.getWidth(null), icon.getHeight(null));
 		    g2 = (Graphics2D) backImage.getGraphics();
 		    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -306,7 +271,7 @@ public class PhotoComponentView {
 	    }
 	    
 		//model.saveBackImage(backImage);
-	}
+	}*/
 	
 	
 	/**
@@ -345,8 +310,6 @@ public class PhotoComponentView {
 	    
 		g.drawImage(image, 0,0,null);
 		
-		
-	   // g.setColor(Color.black);
 	    List<Note> notelist = model.getNotes();
 	    if (notelist.size() > 0) {
 	    	for (int i= 0; i < notelist.size(); i++) {
@@ -372,6 +335,7 @@ public class PhotoComponentView {
 	    		}
 	    	}
 	    }
+	    
 	    if( controller.isNoteSelected()) {
 	    	Note note = model.getNotes().get(controller.getPositionSelected());
 	    	g.setColor(Color.red);

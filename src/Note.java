@@ -57,8 +57,8 @@ public class Note {
 		if( this.maxX < this.endx) {
 			this.maxX = this.endx;
 		}
-		//this.endx = this.endx + (this.linesNumber-1)*font.getHeight();
-		System.out.println("Last line: (" + this.endx + ", "+ this.endy+")");
+
+		
 	}
 
 	public int getMaxX() {
@@ -78,7 +78,7 @@ public class Note {
 		this.x = x;
 		this.maxX = this.maxX + difference;
 		this.endx = this.endx + difference;
-		System.out.println(x + " - "+ this.maxX);
+		
 	}
 
 	public int getY() {
@@ -165,13 +165,10 @@ public class Note {
 		
 		//If never has been a line break, the size of the line is the size of the whole note
 		if (this.lastBreak == null) {
-			//lineSize = this.content.length();
 			lineSize = font.stringWidth(this.content);
 		}else {
 			//If there has been a line break, the size is the one of last line. 
-			//lineSize = this.content.length() - this.lastBreak;
 			line = this.content.substring(lastBreak- 1);
-			//System.out.println(line);
 			lineSize= font.stringWidth(line);
 			
 		}

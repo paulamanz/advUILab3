@@ -63,12 +63,14 @@ public class PhotoComponent  extends JComponent{
 
 	public void changeColor( Color color) {
 		if(this.noteSelected && this.editable) {
-			System.out.println("Cambiar el color del objeto "+ this.positionSelected);
+			
 			this.model.getNotes().get(this.positionSelected).setColor(color);
-			System.out.println("Color cambiado!");
+			
 		}else if( this.strokeSelected && this.editable) {
+			
 			this.model.getStrokes().get(positionSelected).setColor(color); 
 		}else {
+			
 			this.model.setColor(color);
 		}
 		revalidate();
@@ -88,7 +90,7 @@ public class PhotoComponent  extends JComponent{
 			this.editable = true;
 			this.setBorder(BorderFactory.createMatteBorder(1, 5, 1, 1, Color.red));
 		}
-		System.out.println("-CHANGE THE STATE OF THE IMAGE-");
+		
 		revalidate();
 		repaint();
 	}
@@ -150,13 +152,11 @@ public class PhotoComponent  extends JComponent{
 	 */
 	@Override
 	public void paintComponent (Graphics g) {
-//		if ( model.isFlipped()) {
-//			view.paintBackPicture(g, this);
-//			
-//		}else{
-			view.paint(g, this);
+		
+		view.paint(g, this);
+		
 	}
 		
-	//}
+	
 
 }
