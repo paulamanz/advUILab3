@@ -2,20 +2,26 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ActionListener;
+
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 
 public class PhotoComponent  extends JComponent{
 	
-	PhotoComponentView view; 
-	PhotoComponentModel model; 
-	boolean objectSelected;
-	int positionSelected;
+	private PhotoComponentView view; 
+	private PhotoComponentModel model; 
+	private boolean noteSelected;
+	private boolean strokeSelected;
+	private int positionSelected;
+	private boolean editable;
 	
 	public PhotoComponent(String img) {
 		
 		setModel(new PhotoComponentModel(img));
 		setView(new PhotoComponentView(this));
-		this.objectSelected = false;
+		this.noteSelected = false;
+		this.strokeSelected = false;
+		this.editable = false;
 		this.positionSelected = -1;
 	}
 	
@@ -35,11 +41,33 @@ public class PhotoComponent  extends JComponent{
 		
 	}
 	
+	public boolean isStrokeSelected() {
+		return strokeSelected;
+	}
+
+
+	public void setStrokeSelected(boolean strokeSelected) {
+		this.strokeSelected = strokeSelected;
+	}
+	
+	
+	public boolean isEditable() {
+		return editable;
+	}
+
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
+
 	public void changeColor( Color color) {
-		if(this.objectSelected) {
+		if(this.noteSelected && this.editable) {
 			System.out.println("Cambiar el color del objeto "+ this.positionSelected);
 			this.model.getNotes().get(this.positionSelected).setColor(color);
 			System.out.println("Color cambiado!");
+		}else if( this.strokeSelected && this.editable) {
+			this.model.getStrokes().get(positionSelected).setColor(color); 
 		}else {
 			this.model.setColor(color);
 		}
@@ -51,23 +79,27 @@ public class PhotoComponent  extends JComponent{
 	 * When the user clicks twice the image it changes the state of to flipped or not flipped and the whole component 
 	 * is painted again. 
 	 */
-/*	public void changeImageState() {
-		if (model.isFlipped()) {
-			model.setFlipped(false);
+	public void changeImageState() {
+		
+		if (this.editable) {
+			this.editable = false;
+			this.setBorder(BorderFactory.createLineBorder(Color.black));
 		}else {
-			model.setFlipped(true);
+			this.editable = true;
+			this.setBorder(BorderFactory.createMatteBorder(1, 5, 1, 1, Color.red));
 		}
+		System.out.println("-CHANGE THE STATE OF THE IMAGE-");
 		revalidate();
 		repaint();
-	}*/
+	}
 	
-	public boolean isObjectSelected() {
-		return objectSelected;
+	public boolean isNoteSelected() {
+		return noteSelected;
 	}
 
 
-	public void setObjectSelected(boolean objectSelected) {
-		this.objectSelected = objectSelected;
+	public void setNoteSelected(boolean objectSelected) {
+		this.noteSelected = objectSelected;
 	}
 
 

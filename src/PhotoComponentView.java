@@ -5,6 +5,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
@@ -27,10 +28,7 @@ public class PhotoComponentView {
 	private Graphics2D g2;
 	private Graphics g;
 	private Image image;
-	private boolean noteSelected;
-	private boolean strokeSelected;
 	private boolean paintingStroke;
-	private int positionSelectedNote;
 	// Mouse coordinates
 	private int currentX, currentY, oldX, oldY;
 	 
@@ -59,7 +57,7 @@ public class PhotoComponentView {
 			@Override public void mouseReleased(MouseEvent e) {
 				
 				
-				if (controller.isObjectSelected()) {
+				if (controller.isNoteSelected()) {
 					if(controller.getPositionSelected() > 0) {
 						System.out.println("Note "+ controller.getPositionSelected() + ":");
 						Note note = controller.getModel().getNotes().get(controller.getPositionSelected());
@@ -76,48 +74,45 @@ public class PhotoComponentView {
 			public void mouseClicked(MouseEvent e) {
 				
 				//If there is a double click it flips the image
-//				if (e.getClickCount() == 2) {
-//				    controller.changeImageState();
-//				    
-//				}else 
-				 controller.setObjectSelected(false);
-				 strokeSelected = false;
+				if (e.getClickCount() == 2) {
+				    controller.changeImageState();
+				    
+				}else {
+					controller.setNoteSelected(false);
+					controller.setStrokeSelected(false);
 				 
 					
-					if (e.getClickCount() == 1){
+					if (e.getClickCount() == 1 && controller.isEditable()){
 						
 						int x=e.getX();
 						int y=e.getY();
-						
+						     	
 						int positionSelectedNote = isIntoNote(x,y);
-						controller.setPositionSelected(positionSelectedNote);
-						if(controller.isObjectSelected()) {
-							Note note = model.getNotes().get(positionSelectedNote);
+						
+						if(controller.isNoteSelected()) {
+							controller.setPositionSelected(positionSelectedNote);
 							System.out.println("YOU CLICKED INSIDE A NOTE");
 							
-							controller.repaint();
+							
 						}else {
 							int positionSelectedStroke = isIntoStroke(x,y);
-							if (strokeSelected) {
+							if (controller.isStrokeSelected()) {
 								controller.setPositionSelected(positionSelectedStroke);
 								System.out.println("YOU CLICKED INSIDE A STROKE");
-								controller.repaint();
+								
 							}else {
 								model.addNote(new Note(x,y, g.getFontMetrics()));
+								
 							}
 							
 							
 						}
-						
-					//If there is one click and the back of the image is displayed, user can paint and write
-					 // if (model.isFlipped()) {
-						  //get position 
-						  
-						  
-						  controller.setFocusable(true);
-						  controller.requestFocusInWindow();
+						controller.repaint(); 
+						controller.setFocusable(true);
+						controller.requestFocusInWindow();
 					 }
-				  //}
+				}
+				  
 			}
 			@Override public void mouseEntered(MouseEvent e) {}
 			@Override public void mouseExited(MouseEvent e) {}
@@ -131,44 +126,51 @@ public class PhotoComponentView {
 			//Used for tracking the path of the draw and painting it.
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				
-				currentX = e.getX();
-		        currentY = e.getY();
-		        PhotoComponentModel model = controller.getModel();
-				
-				if(controller.isObjectSelected()) {
-					Note note = model.getNotes().get(controller.getPositionSelected());
-					note.setX(currentX);
-					note.setY(currentY);
-					model.getNotes().set(controller.getPositionSelected(), note);
+				if(controller.isEditable()) {
+					currentX = e.getX();
+			        currentY = e.getY();
+			        PhotoComponentModel model = controller.getModel();
 					
-					
-				}else {
-					// coord x,y when drag mouse
-			        
-			 
-			        if (g2 != null) {
-			        	//System.out.println("MouseDragged");
-			          // draw line if g2 context not null
-			          g2.setColor(model.getColor());
-			          g2.drawLine(oldX, oldY, currentX, currentY);
-			         
-			          
-			          if (!paintingStroke) {
-			        	  model.addStroke(new Stroke(oldX, oldY));
-			        	  paintingStroke = true;
-			          }else {
-			        	  model.addToStroke(oldX, oldY);
-			          }
-			          
-			         
-			          
-			          // store current coords x,y as olds x,y
-			          oldX = currentX;
-			          oldY = currentY;
-			        }
+					if(controller.isNoteSelected()) {
+						Note note = model.getNotes().get(controller.getPositionSelected());
+						note.setX(currentX);
+						note.setY(currentY);
+						model.getNotes().set(controller.getPositionSelected(), note);
+						
+						
+					}else if (controller.isStrokeSelected()){
+						int diffX = oldX - currentX;
+						int diffY = oldY - currentY ;
+						int strokeX, strokeY;
+						Stroke stroke = model.getStrokes().get(controller.getPositionSelected());
+						//stroke.addPoint(currentX, currentY);
+						List<Point> strokelist = stroke.getPoints();
+						for (int i= 0; i < strokelist.size();i++) {
+							strokeX = (int) strokelist.get(i).getX();
+							strokeY = (int) strokelist.get(i).getY();
+							strokelist.set(i, new Point(strokeX - diffX, strokeY - diffY));
+							
+						}
+						stroke.setPoints(strokelist);
+						model.getStrokes().set(controller.getPositionSelected(), stroke);
+				       
+					} else {
+						// coord x,y when drag mouse
+				        if (g2 != null) {
+				          if (!paintingStroke) {
+				        	  model.addStroke(new Stroke(oldX, oldY));
+				        	  paintingStroke = true;
+				          }else {
+				        	  model.addToStroke(oldX, oldY);
+				          }
+				        }
+						
+					}
+					oldX = currentX;
+			        oldY = currentY;
+					controller.repaint();
 				}
-				controller.repaint();
+				
 				
 			}
 
@@ -180,8 +182,10 @@ public class PhotoComponentView {
 
 			//Adds the key pressed to the note displayed in the screen
 			@Override public void keyTyped(KeyEvent e) {
+				if (controller.isEditable()) {
+					controller.addToNote(e.getKeyChar());
+				}
 				
-				controller.addToNote(e.getKeyChar());
 			//	Note note = model.getNotes().get(model.getNotes().size()-1);
 			}
 
@@ -213,7 +217,7 @@ public class PhotoComponentView {
 	    			
     				
 	    			if( note.getX() <= x && x <= note.getMaxX()) {
-	    				controller.setObjectSelected(true);
+	    				controller.setNoteSelected(true);
 	    				positionNote = i;
 	    				System.out.println("Has clickado dentro de la nota "+ i +" !!!");
 	    				g.setColor(Color.RED);
@@ -248,7 +252,8 @@ public class PhotoComponentView {
 					System.out.println("FIRST FILTER");
 					System.out.println("VERTICAL: ("+ stroke.getMinY() + " ->" + stroke.getMaxY() + ") | real click:" + y);
 					if (stroke.getMinY() <= y && y <= stroke.getMaxY()) {
-						strokeSelected = true;
+						//strokeSelected = true;
+						controller.setStrokeSelected(true);
 						positionStroke= i;
 						System.out.println("Has clickado dentro del dibujo "+ i);
 					}
@@ -334,6 +339,7 @@ public class PhotoComponentView {
 		
 		BufferedImage image = model.getImage();
 		
+		
 		g2 = (Graphics2D) image.getGraphics();
 	    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	    
@@ -350,11 +356,27 @@ public class PhotoComponentView {
 	    	}
 		    
 	    }
-	    if( controller.isObjectSelected()) {
+	    List<Stroke> strokelist = model.getStrokes();
+	    int currentX,currentY, nextX, nextY;
+	    if (strokelist.size() >0) {
+	    	for (int i = 0; i < strokelist.size(); i++) {
+	    		Stroke stroke = strokelist.get(i);
+	    		g.setColor(stroke.getColor());
+	    		List<Point> pointlist = stroke.getPoints();
+	    		for (int j = 0; j < pointlist.size() - 1; j++) {
+	    			currentX = (int) pointlist.get(j).getX();
+	    			currentY = (int) pointlist.get(j).getY();
+	    			nextX = (int) pointlist.get(j+1).getX();
+	    			nextY = (int) pointlist.get(j+1).getY();
+	    			g.drawLine(currentX,currentY, nextX, nextY);
+	    		}
+	    	}
+	    }
+	    if( controller.isNoteSelected()) {
 	    	Note note = model.getNotes().get(controller.getPositionSelected());
 	    	g.setColor(Color.red);
 			g.drawRect(note.getX(), note.getY(), note.getMaxX()- note.getX(), note.getEndy() - note.getY());
-	    }else if (strokeSelected) {
+	    }else if (controller.isStrokeSelected()) {
 	    	Stroke stroke = model.getStrokes().get(controller.getPositionSelected());
 	    	g.setColor(Color.red);
 	    	g.drawRect(stroke.getMinX(), stroke.getMinY(), stroke.getMaxX()- stroke.getMinX(), stroke.getMaxY()- stroke.getMinY());

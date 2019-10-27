@@ -50,6 +50,24 @@ public class Stroke {
 		return points;
 	}
 	public void setPoints(List<Point> points) {
+		Point p;
+		this.maxX = this.minX = (int) points.get(0).getX();
+		this.maxY = this.minY = (int) points.get(0).getY();
+		for (int i = 1; i< points.size();i++) {
+			p = points.get(i);
+			if(p.getX() > this.maxX) {
+				this.maxX = (int) p.getX();
+			}else if (p.getX() < this.minX) {
+				this.minX = (int) p.getX();
+			}
+			
+			if (p.getY() > this.maxY) {
+				this.maxY = (int) p.getY();
+			}else if (p.getY() < this.minY) {
+				this.minY = (int) p.getY();
+			}
+			
+		}
 		this.points = points;
 	}
 
