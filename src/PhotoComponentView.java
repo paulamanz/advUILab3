@@ -28,6 +28,8 @@ public class PhotoComponentView {
 	private Graphics g;
 	private Image image;
 	private boolean noteSelected;
+	private boolean strokeSelected;
+	private boolean paintingStroke;
 	private int positionSelectedNote;
 	// Mouse coordinates
 	private int currentX, currentY, oldX, oldY;
@@ -36,6 +38,7 @@ public class PhotoComponentView {
 	public PhotoComponentView (PhotoComponent controller) {
 		this.controller = controller;
 		setupListeners();
+		this.paintingStroke=false;
 //		noteSelected = false;
 //		positionSelectedNote = -1;
 		
@@ -64,6 +67,9 @@ public class PhotoComponentView {
 						System.out.println("- Finishes: ("+ note.getEndx()+", "+ note.getEndy()+")");
 					}
 				}
+				if (paintingStroke) {
+					paintingStroke = false;
+				}
 			}
 
 			@Override 
@@ -75,6 +81,8 @@ public class PhotoComponentView {
 //				    
 //				}else 
 				 controller.setObjectSelected(false);
+				 strokeSelected = false;
+				 
 					
 					if (e.getClickCount() == 1){
 						
@@ -89,7 +97,15 @@ public class PhotoComponentView {
 							
 							controller.repaint();
 						}else {
-							model.addNote(new Note(x,y, g.getFontMetrics()));
+							int positionSelectedStroke = isIntoStroke(x,y);
+							if (strokeSelected) {
+								controller.setPositionSelected(positionSelectedStroke);
+								System.out.println("YOU CLICKED INSIDE A STROKE");
+								controller.repaint();
+							}else {
+								model.addNote(new Note(x,y, g.getFontMetrics()));
+							}
+							
 							
 						}
 						
@@ -136,7 +152,16 @@ public class PhotoComponentView {
 			          // draw line if g2 context not null
 			          g2.setColor(model.getColor());
 			          g2.drawLine(oldX, oldY, currentX, currentY);
-			          // refresh draw area to repaint
+			         
+			          
+			          if (!paintingStroke) {
+			        	  model.addStroke(new Stroke(oldX, oldY));
+			        	  paintingStroke = true;
+			          }else {
+			        	  model.addToStroke(oldX, oldY);
+			          }
+			          
+			         
 			          
 			          // store current coords x,y as olds x,y
 			          oldX = currentX;
@@ -175,7 +200,7 @@ public class PhotoComponentView {
 		int i = 0;
 		int positionNote = -1;
 		System.out.println("-----------------------------------------");
-		System.out.println("Entered in method");
+		System.out.println("Entered in method isIntoNOTE");
 	    if (notelist.size() > 0) {
 	    	for (i= 0; i < notelist.size(); i++) {
 	    		Note note = notelist.get(i);
@@ -193,8 +218,7 @@ public class PhotoComponentView {
 	    				System.out.println("Has clickado dentro de la nota "+ i +" !!!");
 	    				g.setColor(Color.RED);
 	    				System.out.println(note.getX()+ " - " + note.getY()+ " - " + (note.getMaxX()- note.getX())+ " - " + (note.getEndy() - note.getY()));
-	    				//VER PORQUE NO FUNCIONA
-	    				//g2.draw3DRect(note.getX(), note.getY(), note.getMaxX()- note.getX(), note.getEndy() - note.getY(), false);
+	    				
 	    				
 
 	    				
@@ -205,6 +229,34 @@ public class PhotoComponentView {
 	    }
 		
 		return positionNote;
+	}
+	
+	public int isIntoStroke(int x, int y) {
+		PhotoComponentModel model = controller.getModel();
+		List<Stroke> strokelist = model.getStrokes();
+		//int i = 0;
+		int positionStroke = -1;
+		System.out.println("-----------------------------------------");
+		System.out.println("Entered in method isIntoSTROKE");
+		if (strokelist.size() >0) {
+			for (int i = 0; i < strokelist.size();i++) {
+				Stroke stroke = strokelist.get(i);
+				System.out.println("Stroke number "+ i);
+				
+				System.out.println("HORIZONTAL: ("+ stroke.getMinX() + " ->" + stroke.getMaxX() + ") | real click:" + x);
+				if (stroke.getMinX() <= x && x <= stroke.getMaxX()) {
+					System.out.println("FIRST FILTER");
+					System.out.println("VERTICAL: ("+ stroke.getMinY() + " ->" + stroke.getMaxY() + ") | real click:" + y);
+					if (stroke.getMinY() <= y && y <= stroke.getMaxY()) {
+						strokeSelected = true;
+						positionStroke= i;
+						System.out.println("Has clickado dentro del dibujo "+ i);
+					}
+				}
+			}
+		}
+		
+		return positionStroke;
 	}
 	
 	/**
@@ -302,6 +354,10 @@ public class PhotoComponentView {
 	    	Note note = model.getNotes().get(controller.getPositionSelected());
 	    	g.setColor(Color.red);
 			g.drawRect(note.getX(), note.getY(), note.getMaxX()- note.getX(), note.getEndy() - note.getY());
+	    }else if (strokeSelected) {
+	    	Stroke stroke = model.getStrokes().get(controller.getPositionSelected());
+	    	g.setColor(Color.red);
+	    	g.drawRect(stroke.getMinX(), stroke.getMinY(), stroke.getMaxX()- stroke.getMinX(), stroke.getMaxY()- stroke.getMinY());
 	    }
 		model.saveImage(image);
 		

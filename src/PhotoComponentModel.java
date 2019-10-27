@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -26,8 +27,11 @@ public class PhotoComponentModel {
 	private Color currentColor; 
 	private FontMetrics font;
 	
-	//reference to note in back
+	//reference to note 
 	private List<Note> notes;
+	
+	//reference to strokes
+	private List<Stroke> strokes;
 	
 	public PhotoComponentModel(String img) {
 		try {
@@ -37,6 +41,7 @@ public class PhotoComponentModel {
 			e.printStackTrace();
 		}
 		this.notes = new ArrayList<Note>();
+		this.strokes = new ArrayList<Stroke>();
 		this.currentColor = Color.red;
 		
 	}
@@ -60,6 +65,10 @@ public class PhotoComponentModel {
 	
 	public List<Note> getNotes() {
 		return this.notes;
+	}
+	
+	public List<Stroke> getStrokes(){
+		return this.strokes;
 	}
 	
 	/**
@@ -95,6 +104,11 @@ public class PhotoComponentModel {
 		note.setColor(currentColor);
 		this.notes.add(note);
 	}
+	
+	public void addStroke(Stroke stroke) {
+		stroke.setColor(currentColor);
+		this.strokes.add(stroke);
+	}
 	/**
 	 * Adds a new character to the last note displayed in the canvas
 	 * @param c
@@ -114,6 +128,12 @@ public class PhotoComponentModel {
 		if(this.notes.size()> 0) {
 			this.notes.get(notes.size()-1).addChar(c);
 		}
+		
+	}
+	
+	public void addToStroke(int x, int y) {
+		this.strokes.get(strokes.size()-1).addPoint(x, y);
+		
 		
 	}
 	
